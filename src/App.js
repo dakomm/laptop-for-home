@@ -1,25 +1,30 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { Component, useEffect, useState } from "react";
+import TopAppBar from "./components/TopAppBar";
+import Main from "./components/main";
 
-function App() {
+import { withStyles } from "@material-ui/core";
+
+const styles = theme => ({
+  root:{
+    width: "100%",
+    height: "100%"
+  },
+  main:{
+    height: "50%"
+  }
+});
+
+export default function App() {
+  //const classes = props;
+  const classes = styles();
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <TopAppBar/>
+      <Main className="main"/>
+      
     </div>
   );
 }
 
-export default App;
+//export default withStyles(styles)(App);
