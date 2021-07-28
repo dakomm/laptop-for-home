@@ -43,10 +43,8 @@ const useStyles = makeStyles((theme) => ({
 const TopAppBar = () => {
   const classes = useStyles();
   const [user, setUser] = useState(''); // db에 존재하는 유저면 확정됨
-  const [userName, setUserName] = useState(''); //로그인창 onChange 시 바뀌는 tmp입력값
+  // const [userName, setUserName] = useState(''); //로그인창 onChange 시 바뀌는 tmp입력값
   const [userID, setUserID] = useState(''); //로그인창 onChange 시 바뀌는 tmp입력값
-  const [tmprName, setTmprName] = useState('');
-  const [tmprID, setTmprID] = useState('');
   const [logIO, setLogIO] = useState('log in');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -55,12 +53,13 @@ const TopAppBar = () => {
 
   let baseUrl = "http://localhost:8000"
 
+  // useEffect(() => {    
+  // },[]);
+
   const logInButton = () => {
     if(logIO === 'log in') setIsModalVisible(true);
     if(logIO === 'log out') {
       setLogIO('log in');
-      setUser(''); 
-      setUserName('');
       setUserID('');
       store.dispatch({
         type: 'changeuser',
@@ -69,54 +68,59 @@ const TopAppBar = () => {
       setOpenSnackbar(true);
       setTimeout(()=>{setOpenSnackbar(false)},1800);
       setSnackbarContent('Logged Out!');  
-      console.log("log out",user, userName, userID)
+      console.log("log out",user, userID)
 
     }
   }
-  const modalLogInButton =  async () => {
-    await resyncDB(userName,userID)
-    if(user === userName){console.log("싱크됌")}
-    if(user === ''){  //TODO: userID, name verify!
+  const modalLogInButton = async () => {
+    var chkUserResult = await ChkUserInfo(userID)
+    if(chkUserResult !== false){ 
+      store.dispatch({
+        type: 'changeuser',
+        user: chkUserResult,
+      });
+      setIsModalVisible(false);
+      setLogIO('log out');
+      setSnackbarContent(chkUserResult+'님, Welcome!');  
+      setOpenSnackbar(true);
+      setTimeout(()=>{setOpenSnackbar(false)},1800);
+    }else{
       setIsModalVisible(false);
       setOpenFailSnackbar(true);
       setTimeout(()=>{setOpenFailSnackbar(false)},6000);
-      console.log("failed",user, userName, userID)
-    }else{
-    store.dispatch({
-      type: 'changeuser',
-      user: user,
-    });
-    setIsModalVisible(false);
-    setLogIO('log out');
-    console.log("log in",user, userName, userID)
-
-    setSnackbarContent(user+'님, Welcome!');  
-    setOpenSnackbar(true);
-    setTimeout(()=>{setOpenSnackbar(false)},1800);
+      console.log("failed",chkUserResult, userID)
     }
   }
 
-  const onNameChange = (e) => {
-    setUserName(e.target.value)
-  }
   const onIDChange = (e) => {
     setUserID(e.target.value)
   }
 
-  const resyncDB = async (name,id) => {
-    await axios 
-      .get(baseUrl+'/api/membersinfo/readdb')
-      .then(async(rspn) => {
-        for(let i=0; i<rspn.data.length; i++){
-          console.log(rspn.data[i].user_name);
-          console.log(rspn.data[i].user_id);
-          console.log(name,id);
-          console.log(name === rspn.data[i].user_name & id === rspn.data[i].user_id)
-          if(name === rspn.data[i].user_name & id === rspn.data[i].user_id){
-             await setUser(name);
-          }
-        }
-      });
+  // const resyncDB = async (name,id) => {
+  //   await axios 
+  //     .get(baseUrl+'/api/membersinfo/readdb')
+  //     .then(async(rspn) => {
+  //       for(let i=0; i<rspn.data.length; i++){
+  //         console.log(rspn.data[i].user_name);
+  //         console.log(rspn.data[i].user_id);
+  //         console.log(name,id);
+  //         console.log(name === rspn.data[i].user_name & id === rspn.data[i].user_id)
+  //         if(name === rspn.data[i].user_name & id === rspn.data[i].user_id){
+  //            await setUser(name);
+  //         }
+  //       }
+  //     });
+  // }
+  const ChkUserInfo = async (id) => {
+    const dbResult = await axios.post(baseUrl+'/api/membersinfo/chkuserinfo',
+    {id: id}
+    );
+    console.log(dbResult.data)
+    if(dbResult.data !== false){
+      return dbResult.data;
+    }else{
+      return false;
+    }
   }
 
   return (
@@ -129,13 +133,12 @@ const TopAppBar = () => {
           <Typography variant="h6" className={classes.title}>
           LAPTOP for YOU
           </Typography>
-          <Button onClick={()=>setOpenSnackbar(true)}>AXIOS TEST</Button>
-          <Button color="inherit">{user}</Button>
+          <Button color="inherit">{store.getState().user}</Button>
           <Button variant="outlined" className={classes.logInButton} onClick={()=>{logInButton()}}>{logIO}</Button>
         </Toolbar>
       </AppBar>
 
-      <Modal 
+      <Modal
         visible={isModalVisible & (logIO === 'log in')} 
         onCancel={() => {setIsModalVisible(false);}}
         width={'250px'}
@@ -147,8 +150,7 @@ const TopAppBar = () => {
         ]}
       >
         <Space direction="vertical"><br/>
-          <Input placeholder="이름" value={userName} onChange={onNameChange}prefix={<UserOutlined/>} required allowClear/>
-          <Input.Password placeholder="사번" value={userID} onChange={onIDChange} onPressEnter={()=>{modalLogInButton()}} prefix={<UserOutlined/>} required allowClear/>
+          <Input placeholder="사번" value={userID} onChange={onIDChange} onPressEnter={()=>{modalLogInButton()}} prefix={<UserOutlined/>} required allowClear/>
         </Space>
       </Modal>
 
