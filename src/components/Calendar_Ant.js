@@ -1,4 +1,5 @@
 import React, { Component, useEffect, useState } from "react";
+import axios from 'axios';
 import store from '../store';
 import { makeStyles, fade, rgbToHex } from '@material-ui/core/styles';
 import { Grid, GridList, Dialog, DialogActions, DialogContent, DialogTitle, DialogContentText} from '@material-ui/core';
@@ -18,6 +19,8 @@ const useStyles = makeStyles((theme) => ({
     padding: 5,
   }
 }));
+
+let idx = 0;
 
 const CalendarAnt = () => {
   const classes = useStyles();
@@ -58,30 +61,35 @@ const CalendarAnt = () => {
       {no:8, num: '86'}
   ];
 
+  let baseUrl = "http://localhost:8000"
+
   useEffect(() => {
-    // resyncDB();
+    resyncDB();
     store.subscribe(()=>{
-      const userfromStore = store.getState().userName;
+      const userfromStore = store.getState().user;
       setUser(userfromStore);
-      console.log(userfromStore);
+
+      
     })
   },[]);
 
-  // const resyncDB = () => {
-  //   axios
-  //     .get(baseUrl+'/api/todolist/readdb')
-  //     .then((rspn)=>{
-  //       for(let i=0; i<rspn.data.length; i++){
-  //         let dateObj = new Date(rspn.data[i].due);
-  //         rspn.data[i].due = dateObj.toLocaleDateString("ko-KR", {timeZone: "Asia/Seoul"});
-  //       }
-  //       store.dispatch({
-  //         type:'initializecontent',
-  //         todoList: rspn.data,
-  //       });
-  //       idx = rspn.data.length;
-  //     });
-  // }
+  const resyncDB = () => {
+    axios
+      .get(baseUrl+'/api/listdata/readdb')
+      .then((rspn)=>{
+        // for(let i=0; i<rspn.data.length; i++){
+        //   let dateObj = rspn.data[i].date;
+        //   rspn.data[i].date 
+        // }
+        store.dispatch({
+          type:'initializecontent',
+          listData: rspn.data,
+        });
+        idx = rspn.data.length;
+        setListData(rspn.data);
+        console.log(rspn.data);
+      });
+  }
 
   function onDateSelect  (value){   //onSelect
     setDate(value);  // 2017-01-25처럼 표시 : selectedValue && selectedValue.format('YYYY-MM-DD')        
@@ -109,11 +117,35 @@ const CalendarAnt = () => {
       setDialogMsg(user + "님, "+date+"에 "+e.num+"번 노트북 대여를 신청하시겠어요?");
     }
   };
-
   const handleCancel = (date,e) => {
 
     setCancelDialogOpen(true);
     setDialogMsg(user + "님, "+date+"에 "+e.num+"번 노트북 대여를 취소하시겠습니까?");
+  }
+
+  const handleOkDialogConfirmed = () => {
+    setOkDialogOpen(false);
+    // setListData([...listData, {id:listData.length, num:registerButtonInfo.num, date:date.format('YYYY-MM-DD'), getter:user}]);
+    axios.post(
+      baseUrl+'/api/listdata/insert',
+      {
+        id: idx,
+        num: registerButtonInfo.num,
+        date: date.format('YYYY-MM-DD'),
+        getter: user,
+      }
+    ).then(()=>{
+      resyncDB();
+    });
+  
+  }
+  const handleCancelDialogConfirmed = () => {
+    setCancelDialogOpen(false);
+    axios.post(
+      baseUrl+'/api/listdata/delete', {num: cancelButtonInfo.num}
+    ).then(()=>{
+      resyncDB();
+    });
   }
 
   const availableDecision = (date) => {
@@ -298,9 +330,7 @@ const CalendarAnt = () => {
       <DialogTitle id="alert-dialog-title">{dialogMsg}</DialogTitle>
       <DialogActions>
         <Button color="primary" 
-          onClick={()=>{
-            setOkDialogOpen(false);
-            setListData([...listData, {id:listData.length, num:registerButtonInfo.num, date:date.format('YYYY-MM-DD'), getter:user}]);
+          onClick={()=>{handleOkDialogConfirmed();
           }}
         > 네! </Button>
         <Button onClick={()=>{setOkDialogOpen(false)}}>아니요</Button>
@@ -311,8 +341,7 @@ const CalendarAnt = () => {
       <DialogTitle id="alert-dialog-title">{dialogMsg}</DialogTitle>
       <DialogActions>
         <Button color="primary" autoFocus
-          onClick={()=>{
-            setCancelDialogOpen(false);
+          onClick={()=>{handleCancelDialogConfirmed();
           }}
         > 네! </Button>
         <Button onClick={()=>{setCancelDialogOpen(false)}}>아니요</Button>
