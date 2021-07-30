@@ -56,7 +56,7 @@ const TopAppBar = () => {
   // useEffect(() => {    
   // },[]);
 
-  const logInButton = () => {
+  const logInButton = () => {   // TopAppBar의 로그인/로그아웃 버튼 클릭 시 
     if(logIO === 'log in') setIsModalVisible(true);
     if(logIO === 'log out') {
       setLogIO('log in');
@@ -72,9 +72,9 @@ const TopAppBar = () => {
 
     }
   }
-  const modalLogInButton = async () => {
-    var chkUserResult = await ChkUserInfo(userID)
-    if(chkUserResult !== false){ 
+  const modalLogInButton = async () => {  // 로그인 창에서 login 버튼 클릭 시
+    var chkUserResult = await ChkUserInfo(userID) // user 이름 또는 false 리턴
+    if(chkUserResult !== false){  // user 정보 일치 시
       store.dispatch({
         type: 'changeuser',
         user: chkUserResult,
@@ -84,8 +84,7 @@ const TopAppBar = () => {
       setSnackbarContent(chkUserResult+'님, Welcome!');  
       setOpenSnackbar(true);
       setTimeout(()=>{setOpenSnackbar(false)},1800);
-    }else{
-      setIsModalVisible(false);
+    }else{                        // user 정보 불일치 시
       setOpenFailSnackbar(true);
       setTimeout(()=>{setOpenFailSnackbar(false)},6000);
       console.log("failed",chkUserResult, userID)
@@ -96,27 +95,12 @@ const TopAppBar = () => {
     setUserID(e.target.value)
   }
 
-  // const resyncDB = async (name,id) => {
-  //   await axios 
-  //     .get(baseUrl+'/api/membersinfo/readdb')
-  //     .then(async(rspn) => {
-  //       for(let i=0; i<rspn.data.length; i++){
-  //         console.log(rspn.data[i].user_name);
-  //         console.log(rspn.data[i].user_id);
-  //         console.log(name,id);
-  //         console.log(name === rspn.data[i].user_name & id === rspn.data[i].user_id)
-  //         if(name === rspn.data[i].user_name & id === rspn.data[i].user_id){
-  //            await setUser(name);
-  //         }
-  //       }
-  //     });
-  // }
   const ChkUserInfo = async (id) => {
     const dbResult = await axios.post(baseUrl+'/api/membersinfo/chkuserinfo',
     {id: id}
     );
     console.log(dbResult.data)
-    if(dbResult.data !== false){
+    if(dbResult.data !== false){    // user 정보 일치 시
       return dbResult.data;
     }else{
       return false;

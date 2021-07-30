@@ -21,6 +21,10 @@ export default createStore(function(state,action){
       }
       return state;
       
+    case 'drawerOpen':
+     state.open = action.open;
+     return state;
+     
     default:
       return state;
   }

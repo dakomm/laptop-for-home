@@ -27,13 +27,15 @@ const CalendarAnt = () => {
   const [user, setUser] = useState(''); //로그인 user state
   const [date, setDate] = useState(moment());
   const [isModalVisible, setIsModalVisible] = useState(false); //더블 클릭 시 Modal 띄우기, 닫기
-  const [okDialogOpen, setOkDialogOpen] = useState(false); // table 가능 버튼 클릭
-  const [cancelDialogOpen, setCancelDialogOpen] = useState(false); // table 취소 버튼 클릭
+  const [okDialogOpen, setOkDialogOpen] = useState(false); // table 가능 버튼 클릭 시
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false); // table 취소 버튼 클릭 시
+  const [dialogMsg, setDialogMsg] = useState(''); // table 버튼 클릭 시 dialogMsg
+  const [loginReqDialogOpen, setLoginReqDialogOpen] = useState(false); // 로그인정보 없는 상태에서 table 버튼 클릭 시
+  const [impsblDialogOpen, setImpsblDialogOpen] = useState(false); // 예약불가 날짜(과거/7일이후)에서 table 버튼 클릭 시
+
   const [registerButtonInfo, setRegisterButtonInfo] = useState(); // table 버튼 클릭된 listItem 정보 dialog에 전달
   const [cancelButtonInfo, setCancelButtonInfo] = useState(); // table 버튼 클릭된 listItem 정보 dialog에 전달
   const [dateClicked, setDateClicked] = useState(false); //더블 클릭 시 Modal 띄우기 위해
-  const [dialogMsg, setDialogMsg] = useState(''); // table 버튼 클릭 시 dialogMsg
-  const [loginReqDialogOpen, setLoginReqDialogOpen] = useState(false);
   const [selectedID, setSelectedID] = useState(); 
   const [listData, setListData] = useState([
     {id:0, num: '65', date: '2021-07-28', getter: 'dk'},
@@ -68,8 +70,6 @@ const CalendarAnt = () => {
     store.subscribe(()=>{
       const userfromStore = store.getState().user;
       setUser(userfromStore);
-
-      
     })
   },[]);
 
@@ -101,31 +101,32 @@ const CalendarAnt = () => {
     setTimeout(() => setDateClicked(false), 200);
   }
 
-  const dateFilteredList = (date) => {
-    return listData.filter((e => e.date === date));
-  }
-
-  const handleGet = (date,e) => {
-    if(user === ''){
-      setLoginReqDialogOpen(true);
-      setDialogMsg("로그인이 필요한 서비스입니다. 먼저 로그인하세요!")
-      return;
-    // }else if({/*date <= moment().format(YYYY-MM-DD)*/}){
-    //   return;
+  const handleGet = (e) => {
+    if((date.format('YYYY-MM-DD')>moment().format('YYYY-MM-DD'))&(date.format('YYYY.MM.DD.')<=moment().add(7, 'days').calendar())){
+      if(user === ''){
+        setLoginReqDialogOpen(true);
+        setDialogMsg("로그인이 필요한 서비스입니다. 먼저 로그인하세요!")
+      }else{
+        setOkDialogOpen(true); 
+        setDialogMsg(user + "님, "+date.format('YYYY-MM-DD')+"에 "+e.num+"번 노트북 대여를 신청하시겠어요?");
+      }
     }else{
-      setOkDialogOpen(true); 
-      setDialogMsg(user + "님, "+date+"에 "+e.num+"번 노트북 대여를 신청하시겠어요?");
+      setImpsblDialogOpen(true); 
+      setDialogMsg("파란색 스티커가 표시된 날에만 대여 예약이 가능합니다.");
     }
   };
-  const handleCancel = (date,e) => {
-
-    setCancelDialogOpen(true);
-    setDialogMsg(user + "님, "+date+"에 "+e.num+"번 노트북 대여를 취소하시겠습니까?");
-  }
+  const handleCancel = (e) => {
+    if((date.format('YYYY-MM-DD')>moment().format('YYYY-MM-DD'))&(date.format('YYYY.MM.DD.')<=moment().add(7, 'days').calendar())){
+      setCancelDialogOpen(true);
+      setDialogMsg(user + "님, "+date.format('YYYY-MM-DD')+"에 "+e.num+"번 노트북 대여를 취소하시겠습니까?");
+    }else{
+      setImpsblDialogOpen(true); 
+      setDialogMsg("파란색 스티커가 표시된 날에만 대여 예약이 가능합니다.");
+    }
+  };
 
   const handleOkDialogConfirmed = () => {
     setOkDialogOpen(false);
-    // setListData([...listData, {id:listData.length, num:registerButtonInfo.num, date:date.format('YYYY-MM-DD'), getter:user}]);
     axios.post(
       baseUrl+'/api/listdata/insert',
       {
@@ -137,7 +138,6 @@ const CalendarAnt = () => {
     ).then(()=>{
       resyncDB();
     });
-  
   }
   const handleCancelDialogConfirmed = () => {
     setCancelDialogOpen(false);
@@ -168,7 +168,7 @@ const CalendarAnt = () => {
         if((listData[i].date === date.format('YYYY-MM-DD')) & (listData[i].num === e.num)){
           if(listData[i].getter === user){
             return(
-              <Button onClick={()=>{handleCancel(date.format('YYYY-MM-DD'),e);setCancelButtonInfo(e)}} danger type="primary" shape="round" size="small" style={{margin:3}}>
+              <Button onClick={()=>{handleCancel(e);setCancelButtonInfo(e)}} danger type="primary" shape="round" size="small" style={{margin:3}}>
                 취소
               </Button>
             )
@@ -183,17 +183,17 @@ const CalendarAnt = () => {
       }
       // 2. listData 없음
       return(
-        <Button onClick={()=>{handleGet(date.format('YYYY-MM-DD'),e);setRegisterButtonInfo(e)}} type="primary" shape="round" size="small" style={{margin:3}}>
+        <Button onClick={()=>{handleGet(e);setRegisterButtonInfo(e)}} type="primary" shape="round" size="small" style={{margin:3}}>
         가능
         </Button>
       ) 
             // setListData(listData.map(item=> item.id === id ? ({...item, getter : user}): item))
-  } 
+  }
 
   function dateCellRender(value) {
     let available = Boolean;
     available = availableDecision(value);
-    if((value > moment()) & (moment().add(7, 'days').calendar() >= value.format("YYYY.MM.DD."))& available){
+    if((value.format('YYYY-MM-DD')>moment().format('YYYY-MM-DD')) & (value.format("YYYY.MM.DD.")<=moment().add(7, 'days').calendar())& available){
       return(
         <Grid container direction="column" alignItems="flex-end">
           <Button style={{marginTop: "1em"}} size="small" type="primary" shape="circle">&nbsp;</Button>
@@ -201,15 +201,6 @@ const CalendarAnt = () => {
       )
     } 
   };
-
-  const getListData = (value) => {
-    let listData;
-    // listData = [
-    //   {id:'0', date: '2021-07-21', giver: 'DK', getter: ''},
-    //   {id:'1', date: '2021-07-01', giver: 'AA', getter: 'BBB'},
-    // ];
-    return (listData || []);
-  }
 
   return(
     <div className="site-calendar-customize-header-wrapper">
@@ -356,6 +347,14 @@ const CalendarAnt = () => {
             setLoginReqDialogOpen(false);
             setIsModalVisible(false)
           }}
+        > 확인 </Button>
+      </DialogActions>
+    </Dialog>
+
+    <Dialog open={impsblDialogOpen} onClose={()=>{setImpsblDialogOpen(false)}} aria-describedby="alert-dialog-description" aria-labelledby="alert-dialog-title">
+      <DialogTitle id="alert-dialog-title">{dialogMsg}</DialogTitle>
+      <DialogActions>
+        <Button color="primary" autoFocus onClick={()=>{setImpsblDialogOpen(false);}}
         > 확인 </Button>
       </DialogActions>
     </Dialog>
