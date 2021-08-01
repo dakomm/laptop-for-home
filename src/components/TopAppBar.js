@@ -5,9 +5,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import { AppBar, Toolbar, Typography, Button, IconButton, Snackbar, Grid, Slide} from '@material-ui/core';
 import MuiAlert from '@material-ui/lab/Alert';
 import { History, Event } from '@material-ui/icons';
-import { green } from '@material-ui/core/colors';
-import { Modal, Input, Divider, Space, Select, Col, Row, message} from 'antd';
-import { UserOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+import { Modal, Input, Space} from 'antd';
+import { UserOutlined } from '@ant-design/icons';
 
 function Alert(props) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -43,7 +42,6 @@ const useStyles = makeStyles((theme) => ({
 const TopAppBar = () => {
   const classes = useStyles();
   const [user, setUser] = useState(''); // db에 존재하는 유저면 확정됨
-  // const [userName, setUserName] = useState(''); //로그인창 onChange 시 바뀌는 tmp입력값
   const [userID, setUserID] = useState(''); //로그인창 onChange 시 바뀌는 tmp입력값
   const [logIO, setLogIO] = useState('log in');
   const [isLogInModalVisible, setIsLogInModalVisible] = useState(false);
@@ -53,7 +51,6 @@ const TopAppBar = () => {
   const [isOpenHistory, setIsOpenHistory] = useState(false);
 
   let baseUrl = "http://localhost:8000"
-
 
   const logInButton = () => {   // TopAppBar의 로그인/로그아웃 버튼 클릭 시 
     if(logIO === 'log in') setIsLogInModalVisible(true);
@@ -110,10 +107,8 @@ const TopAppBar = () => {
     <div className={classes.root}>
       <AppBar position="static" className={classes.AppBar}>
         <Toolbar >
-          <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-            {isOpenHistory ? 
-              <History onClick={()=>{setIsOpenHistory(false); store.dispatch({type: 'openHistory', open:false});}}/> 
-            : <Event onClick={()=>{setIsOpenHistory(true); store.dispatch({type: 'openHistory', open:true});}}/>}
+          <IconButton onClick={()=>{setIsOpenHistory(!isOpenHistory);store.dispatch({type: 'openHistory', open:!isOpenHistory});}} edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
+            {isOpenHistory ? <History /> : <Event />}
           </IconButton>
           <Typography variant="h6" className={classes.title}>
           LAPTOP for YOU

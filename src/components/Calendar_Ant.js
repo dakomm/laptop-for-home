@@ -1,15 +1,14 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import store from '../store';
-import { makeStyles, fade, rgbToHex } from '@material-ui/core/styles';
-import { Grid, GridList, Dialog, DialogActions, DialogContent, DialogTitle, DialogContentText} from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
+import { Grid, Dialog, DialogActions, DialogTitle } from '@material-ui/core';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
-import { Calendar, Modal, Alert, List, Divider, Space, Select, Radio, Col, Row, Typography, Button, Badge, Popover, message} from 'antd';
+import { Calendar, Modal, Select, Col, Row, Button } from 'antd';
 import moment from 'moment';
 import 'moment/locale/ko';
 import './Calendar_Ant.css'
 import 'antd/dist/antd.css';
-import { DomainDisabledRounded } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -36,7 +35,6 @@ const CalendarAnt = () => {
   const [registerButtonInfo, setRegisterButtonInfo] = useState(); // table 버튼 클릭된 listItem 정보 dialog에 전달
   const [cancelButtonInfo, setCancelButtonInfo] = useState(); // table 버튼 클릭된 listItem 정보 dialog에 전달
   const [dateClicked, setDateClicked] = useState(false); //더블 클릭 시 Modal 띄우기 위해
-  const [selectedID, setSelectedID] = useState(); 
   const [listData, setListData] = useState([]);
 
   const listItem = [
@@ -57,11 +55,6 @@ const CalendarAnt = () => {
     store.subscribe(()=>{
       const userfromTopAppBar = store.getState().user;
       setUser(userfromTopAppBar);
-      // var logInReqFromHistory = store.getState().loginReq;
-      // console.log(logInReqFromHistory)
-      // setLoginReqDialogOpen(logInReqFromHistory);
-      // setDialogMsg("로그인이 필요한 서비스입니다. 먼저 로그인하세요!")
-      // logInReqFromHistory = false;
     })
   },[]);
 
@@ -69,10 +62,6 @@ const CalendarAnt = () => {
     axios
       .get(baseUrl+'/api/listdata/readdb')
       .then((rspn)=>{
-        // for(let i=0; i<rspn.data.length; i++){
-        //   let dateObj = rspn.data[i].date;
-        //   rspn.data[i].date 
-        // }
         store.dispatch({
           type:'initializecontent',
           listData: rspn.data,
@@ -181,18 +170,22 @@ const CalendarAnt = () => {
         가능
         </Button>
       ) 
-            // setListData(listData.map(item=> item.id === id ? ({...item, getter : user}): item))
   }
 
   function dateCellRender(value) {
     let available = Boolean;
     available = availableDecision(value);
-    if((value.format('YYYY-MM-DD')>moment().format('YYYY-MM-DD')) & (value.format("YYYY.MM.DD.")<=moment().add(7, 'days').calendar())& available){
+    if((value.format('YYYY-MM-DD')>moment().format('YYYY-MM-DD')) & (value.format("YYYY.MM.DD.")<=moment().add(7, 'days').calendar())){
+      if(available){
       return(
         <Grid container direction="column" alignItems="flex-end">
           <Button style={{marginTop: "1em"}} size="small" type="primary" shape="circle">&nbsp;</Button>
         </Grid>
-      )
+      )}else{return(
+        <Grid container direction="column" alignItems="flex-end">
+          <Button style={{marginTop: "1em"}} size="small" danger type="primary" shape="circle">&nbsp;</Button>
+        </Grid>
+      )}
     } 
   };
 
@@ -313,7 +306,7 @@ const CalendarAnt = () => {
     <Dialog open={okDialogOpen} onClose={()=>{setOkDialogOpen(false)}} aria-describedby="alert-dialog-description" aria-labelledby="alert-dialog-title">
       <DialogTitle id="alert-dialog-title">{dialogMsg}</DialogTitle>
       <DialogActions>
-        <Button color="primary" 
+        <Button color="primary" autoFocus
           onClick={()=>{handleOkDialogConfirmed();
           }}
         > 네! </Button>

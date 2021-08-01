@@ -2,9 +2,8 @@ import React,{ useEffect, useState } from 'react';
 import axios from 'axios';
 import store from '../store';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
-import { Paper, Box, Tab, Tabs, Typography, Select, MenuItem, InputLabel, InputBase, FormControl, List, ListItem, Button, Snackbar, Grid} from '@material-ui/core';
+import { Paper, Box, Tab, Tabs, Typography, Select, MenuItem, InputLabel, InputBase, FormControl } from '@material-ui/core';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
-import { Close, ExpandLess, ExpandMore } from '@material-ui/icons';
 import {  } from '@material-ui/lab';
 import PropTypes from 'prop-types';
 
@@ -19,20 +18,14 @@ const useStyles = makeStyles((theme) => ({
   margin: {
     margin: theme.spacing(1),
   },
-  Table:{
-    padding: 5,
-  },
-
 }));
 
 const History = () => {
   const classes = useStyles();
   const [user, setUser] = useState(''); // store에서 가져온 값
-  // const [isOpenHistory, setIsOpenHistory] = useState(false); // store에서 가져온 값 when 메뉴아이콘 clicked
   const [listByGetter, setListByGetter] = useState([]); // server에서 받아온 배열
   const [listByNum, setListByNum] = useState([]); // server에서 받아온 배열
   const [selectedNum, setSelectedNum] = useState(''); // select에서 선택한 num
-  // const [loginReq, setLoginReq] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const [isUserOk, setIsUserOk] = useState(false);
  
@@ -50,33 +43,36 @@ const History = () => {
   let baseUrl = "http://localhost:8000"
 
   useEffect(() => {
-    store.subscribe(()=>{
-      const userfromTopAppBar = store.getState().user;
-      setUser(userfromTopAppBar);
-      userfromTopAppBar==='' ?  setIsUserOk(false) : setIsUserOk(true);
-    })
+    const userfromTopAppBar = store.getState().user;
+    setUser(userfromTopAppBar);
+    userfromTopAppBar==='' ?  setIsUserOk(false) : setIsUserOk(true);
   },[]);
 
-  const resyncDB = () => {
-    axios
-      .post(baseUrl+'/api/listdata/listupbygetter',{getter: user})
-      .then((rspn)=>{
-        console.log("listupbygetter의 rspn:",rspn.data)
-        for(let i=0; i<rspn.data.length; i++){
-          setListByGetter([...listByGetter, rspn.data[i]]);
-        }
-      });
-  }
-
-  const myHistory = () => {
-    if(user !== ''){
-      console.log("나의 히스토리 클릭")
+  store.subscribe(()=>{
+    const userfromTopAppBar = store.getState().user;
+    setUser(userfromTopAppBar);
+    if(userfromTopAppBar===''){
+      setIsUserOk(false);
+      setTabValue(0);
+    }else{
+      setIsUserOk(true);
     }
-  }
-
+  })
 
   const handleChange = (event, newValue) => {
     setTabValue(newValue);
+    if(newValue === 1){
+      axios
+      .post(baseUrl+'/api/listdata/listupbygetter',{getter: user})
+      .then((rspn)=>{
+        let tmpArray = new Array();
+        console.log("listupbygetter의 rspn:",rspn.data)
+        for(let i=0; i<rspn.data.length; i++){
+          tmpArray.push(rspn.data[i]);
+        };
+        setListByGetter(tmpArray);
+      });
+    }
   };
   const handleNumChange = (event) => {
     setSelectedNum(event.target.value);
@@ -120,7 +116,7 @@ const History = () => {
               })}
           </Select>
         </FormControl>
-        <TableContainer >
+        <TableContainer style={{width:'600px'}}>
           <Table stickyHeader>
             <TableHead ><TableRow>
               <TableCell align="center" style={{fontWeight:"bolder",padding:"10px"}}>자산번호</TableCell>
@@ -132,9 +128,9 @@ const History = () => {
               listByNum.map((e) => {
                 return(
                 <TableRow key={e.id} >
-                  <TableCell className={classes.Table} align="center">{e.num} </TableCell>
-                  <TableCell className={classes.Table} align="center">{e.date}</TableCell>
-                  <TableCell className={classes.Table} align="center">{e.getter}</TableCell>
+                  <TableCell align="center">{e.num} </TableCell>
+                  <TableCell align="center">{e.date}</TableCell>
+                  <TableCell align="center">{e.getter}</TableCell>
                 </TableRow>
                 )
               })}
@@ -144,7 +140,27 @@ const History = () => {
       </TabPanel>
 
       <TabPanel value={tabValue} index={1}>
-        {myHistory()}
+        <TableContainer style={{width:'600px'}}>
+          <Table stickyHeader>
+            <TableHead ><TableRow>
+              <TableCell align="center" style={{fontWeight:"bolder",padding:"10px"}}>자산번호</TableCell>
+              <TableCell align="center" style={{fontWeight:"bolder",padding:"10px"}}>Date</TableCell>
+              <TableCell align="center" style={{fontWeight:"bolder",padding:"10px"}}>예약자</TableCell>
+            </TableRow></TableHead>
+            <TableBody >
+              {
+              listByGetter.map((e) => {
+                return(
+                <TableRow key={e.id} >
+                  <TableCell align="center">{e.num} </TableCell>
+                  <TableCell align="center">{e.date}</TableCell>
+                  <TableCell align="center">{e.getter}</TableCell>
+                </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </TabPanel>
 
     </div>

@@ -4,7 +4,8 @@ export default createStore(function(state,action){
   if(state === undefined){
     return {
       user:'',
-      // listData:[]
+      listData: [],
+      open: false,
     };
   }
   switch(action.type){
@@ -24,11 +25,6 @@ export default createStore(function(state,action){
     case 'openHistory':
       state.open = action.open;
       return state;
-
-    // case 'loginReq':
-    //   state.loginReq = action.loginReq;
-    //   console.log(state.loginReq)
-    //   return state;
      
     default:
       return state;
