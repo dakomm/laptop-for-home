@@ -57,21 +57,6 @@ const History = () => {
     })
   },[]);
 
-  useEffect(() => {
-    setListByNum([]);
-    console.log("1")
-    axios
-      .post(baseUrl+'/api/listdata/listupbynum',{num: selectedNum})
-      .then((rspn)=>{
-        console.log("listupbynum의 rspn:",rspn.data)
-        for(let i=0; i<rspn.data.length; i++){
-          setListByNum([...listByNum, rspn.data[i]]);
-          console.log("2")
-
-        }
-      });
-  },[selectedNum]);
-
   const resyncDB = () => {
     axios
       .post(baseUrl+'/api/listdata/listupbygetter',{getter: user})
@@ -81,59 +66,30 @@ const History = () => {
           setListByGetter([...listByGetter, rspn.data[i]]);
         }
       });
-    axios
-      .post(baseUrl+'/api/listdata/listupbynum',{num: selectedNum})
-      .then((rspn)=>{
-        console.log("listupbynum의 rspn:",rspn.data)
-        for(let i=0; i<rspn.data.length; i++){
-          setListByNum([...listByNum, rspn.data[i]]);
-        }
-      });
   }
 
   const myHistory = () => {
     if(user !== ''){
-      // store.dispatch({
-      //   type: 'loginReq',
-      //   loginReq: loginReq,
-      // });
       console.log("나의 히스토리 클릭")
-      
     }
   }
 
-  const laptopHistory = () => {
-    
-    console.log("selected listByNum: ",listByNum)
-    if(selectedNum !== ''){
-      return(
-        <TableContainer >
-          <Table stickyHeader>
-            <TableHead ><TableRow>
-              <TableCell align="center" style={{fontWeight:"bolder",padding:"10px"}}>자산번호</TableCell>
-              <TableCell align="center" style={{fontWeight:"bolder",padding:"10px"}}>Date</TableCell>
-              <TableCell align="center" style={{fontWeight:"bolder",padding:"10px"}}>예약자</TableCell>
-            </TableRow></TableHead>
-            <TableBody >
-              {listByNum.map((e) => (
-                <TableRow key={e.id} >
-                  <TableCell className={classes.Table} align="center">{e.num} </TableCell>
-                  <TableCell className={classes.Table} align="center">{e.date}</TableCell>
-                  <TableCell className={classes.Table} align="center">{e.getter}</TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-          </Table>
-        </TableContainer>
-      );
-    }
-  }
 
   const handleChange = (event, newValue) => {
     setTabValue(newValue);
   };
   const handleNumChange = (event) => {
     setSelectedNum(event.target.value);
+    axios
+      .post(baseUrl+'/api/listdata/listupbynum',{num: event.target.value})
+      .then((rspn)=>{
+        let tmpArray = new Array();
+        for(let i=0; i<rspn.data.length; i++){
+          tmpArray.push(rspn.data[i]);
+        }
+        setListByNum(tmpArray);
+      });
+
   };
 
   return(
@@ -164,7 +120,27 @@ const History = () => {
               })}
           </Select>
         </FormControl>
-        {laptopHistory()}
+        <TableContainer >
+          <Table stickyHeader>
+            <TableHead ><TableRow>
+              <TableCell align="center" style={{fontWeight:"bolder",padding:"10px"}}>자산번호</TableCell>
+              <TableCell align="center" style={{fontWeight:"bolder",padding:"10px"}}>Date</TableCell>
+              <TableCell align="center" style={{fontWeight:"bolder",padding:"10px"}}>예약자</TableCell>
+            </TableRow></TableHead>
+            <TableBody >
+              {
+              listByNum.map((e) => {
+                return(
+                <TableRow key={e.id} >
+                  <TableCell className={classes.Table} align="center">{e.num} </TableCell>
+                  <TableCell className={classes.Table} align="center">{e.date}</TableCell>
+                  <TableCell className={classes.Table} align="center">{e.getter}</TableCell>
+                </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </TabPanel>
 
       <TabPanel value={tabValue} index={1}>
