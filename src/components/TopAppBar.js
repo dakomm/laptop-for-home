@@ -1,10 +1,10 @@
-import React,{ useState } from 'react';
+import React,{ useState, useEffect } from 'react';
 import axios from 'axios';
 import store from '../store';
 import { makeStyles } from '@material-ui/core/styles';
 import { AppBar, Toolbar, Typography, Button, IconButton, Snackbar, Grid, Slide} from '@material-ui/core';
 import MuiAlert from '@material-ui/lab/Alert';
-import MenuIcon from '@material-ui/icons/Menu';
+import { History, Event } from '@material-ui/icons';
 import { green } from '@material-ui/core/colors';
 import { Modal, Input, Divider, Space, Select, Col, Row, message} from 'antd';
 import { UserOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
@@ -46,18 +46,17 @@ const TopAppBar = () => {
   // const [userName, setUserName] = useState(''); //로그인창 onChange 시 바뀌는 tmp입력값
   const [userID, setUserID] = useState(''); //로그인창 onChange 시 바뀌는 tmp입력값
   const [logIO, setLogIO] = useState('log in');
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isLogInModalVisible, setIsLogInModalVisible] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [openFailSnackbar, setOpenFailSnackbar] = useState(false);
   const [snackbarContent, setSnackbarContent] = useState('');
+  const [isOpenHistory, setIsOpenHistory] = useState(false);
 
   let baseUrl = "http://localhost:8000"
 
-  // useEffect(() => {    
-  // },[]);
 
   const logInButton = () => {   // TopAppBar의 로그인/로그아웃 버튼 클릭 시 
-    if(logIO === 'log in') setIsModalVisible(true);
+    if(logIO === 'log in') setIsLogInModalVisible(true);
     if(logIO === 'log out') {
       setLogIO('log in');
       setUserID('');
@@ -79,7 +78,7 @@ const TopAppBar = () => {
         type: 'changeuser',
         user: chkUserResult,
       });
-      setIsModalVisible(false);
+      setIsLogInModalVisible(false);
       setLogIO('log out');
       setSnackbarContent(chkUserResult+'님, Welcome!');  
       setOpenSnackbar(true);
@@ -112,7 +111,9 @@ const TopAppBar = () => {
       <AppBar position="static" className={classes.AppBar}>
         <Toolbar >
           <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-            <MenuIcon />
+            {isOpenHistory ? 
+              <History onClick={()=>{setIsOpenHistory(false); store.dispatch({type: 'openHistory', open:false});}}/> 
+            : <Event onClick={()=>{setIsOpenHistory(true); store.dispatch({type: 'openHistory', open:true});}}/>}
           </IconButton>
           <Typography variant="h6" className={classes.title}>
           LAPTOP for YOU
@@ -123,13 +124,13 @@ const TopAppBar = () => {
       </AppBar>
 
       <Modal
-        visible={isModalVisible & (logIO === 'log in')} 
-        onCancel={() => {setIsModalVisible(false);}}
+        visible={isLogInModalVisible & (logIO === 'log in')} 
+        onCancel={() => {setIsLogInModalVisible(false);}}
         width={'250px'}
         closable
         footer={[
           <Grid container direction="column" alignItems="center">
-            <Button type="primary" onClick={()=>{modalLogInButton()}}> Log In </Button>
+            <Button type="primary" autoFocus onClick={()=>{modalLogInButton()}}>Log In</Button>
           </Grid>
         ]}
       >

@@ -21,9 +21,14 @@ export default createStore(function(state,action){
       }
       return state;
       
-    case 'drawerOpen':
-     state.open = action.open;
-     return state;
+    case 'openHistory':
+      state.open = action.open;
+      return state;
+
+    // case 'loginReq':
+    //   state.loginReq = action.loginReq;
+    //   console.log(state.loginReq)
+    //   return state;
      
     default:
       return state;

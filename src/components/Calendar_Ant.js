@@ -37,20 +37,7 @@ const CalendarAnt = () => {
   const [cancelButtonInfo, setCancelButtonInfo] = useState(); // table 버튼 클릭된 listItem 정보 dialog에 전달
   const [dateClicked, setDateClicked] = useState(false); //더블 클릭 시 Modal 띄우기 위해
   const [selectedID, setSelectedID] = useState(); 
-  const [listData, setListData] = useState([
-    {id:0, num: '65', date: '2021-07-28', getter: 'dk'},
-    {id:1, num: '65', date: '2021-07-30', getter: 'dk'},
-    {id:2, num: '65', date: '2021-07-05', getter: 'dk'},
-    {id:3, num: '66', date: '2021-07-05', getter: 'dk'},
-    {id:4, num: '66', date: '2021-07-28', getter: 'dk'},
-    {id:5, num: '70', date: '2021-07-28', getter: 'dk'},
-    {id:6, num: '75', date: '2021-07-28', getter: 'dk'},
-    {id:7, num: '65', date: '2021-07-28', getter: 'dk'},
-    {id:8, num: '65', date: '2021-07-28', getter: 'dk'},
-    {id:9, num: '65', date: '2021-07-28', getter: 'dk'},
-    {id:10, num: '65', date: '2021-07-28', getter: 'dk'},
-
-  ]);
+  const [listData, setListData] = useState([]);
 
   const listItem = [
       {no:1, num: '65'},
@@ -68,8 +55,13 @@ const CalendarAnt = () => {
   useEffect(() => {
     resyncDB();
     store.subscribe(()=>{
-      const userfromStore = store.getState().user;
-      setUser(userfromStore);
+      const userfromTopAppBar = store.getState().user;
+      setUser(userfromTopAppBar);
+      // var logInReqFromHistory = store.getState().loginReq;
+      // console.log(logInReqFromHistory)
+      // setLoginReqDialogOpen(logInReqFromHistory);
+      // setDialogMsg("로그인이 필요한 서비스입니다. 먼저 로그인하세요!")
+      // logInReqFromHistory = false;
     })
   },[]);
 
@@ -87,7 +79,6 @@ const CalendarAnt = () => {
         });
         idx = rspn.data.length;
         setListData(rspn.data);
-        console.log(rspn.data);
       });
   }
 
@@ -141,8 +132,11 @@ const CalendarAnt = () => {
   }
   const handleCancelDialogConfirmed = () => {
     setCancelDialogOpen(false);
+    console.log("cancelButtonInfo.id=",cancelButtonInfo)
     axios.post(
-      baseUrl+'/api/listdata/delete', {num: cancelButtonInfo.num}
+      baseUrl+'/api/listdata/delete', {
+        id: cancelButtonInfo,
+      }
     ).then(()=>{
       resyncDB();
     });
@@ -168,7 +162,7 @@ const CalendarAnt = () => {
         if((listData[i].date === date.format('YYYY-MM-DD')) & (listData[i].num === e.num)){
           if(listData[i].getter === user){
             return(
-              <Button onClick={()=>{handleCancel(e);setCancelButtonInfo(e)}} danger type="primary" shape="round" size="small" style={{margin:3}}>
+              <Button onClick={()=>{handleCancel(e);setCancelButtonInfo(i)}} danger type="primary" shape="round" size="small" style={{margin:3}}>
                 취소
               </Button>
             )
@@ -314,7 +308,6 @@ const CalendarAnt = () => {
         </TableBody>
         </Table>
       </TableContainer>
-      
     </Modal>
     
     <Dialog open={okDialogOpen} onClose={()=>{setOkDialogOpen(false)}} aria-describedby="alert-dialog-description" aria-labelledby="alert-dialog-title">

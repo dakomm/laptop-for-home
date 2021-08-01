@@ -1,28 +1,44 @@
 import React, { Component, useEffect, useState } from "react";
+import { makeStyles } from '@material-ui/core/styles';
 import TopAppBar from "./components/TopAppBar";
 import Main from "./components/main";
+import History from "./components/history";
+import CalendarAnt from "./components/Calendar_Ant"
+import store from './store';
+
+
 
 import { withStyles } from "@material-ui/core";
 
-const styles = theme => ({
+const useStyles = makeStyles((theme) => ({
   root:{
     width: "100%",
     height: "100%"
   },
-  main:{
-    height: "50%"
-  }
-});
+
+}));
 
 export default function App() {
-  //const classes = props;
-  const classes = styles();
+  const classes = useStyles();
+  const [user, setUser] = useState(''); // store에서 가져온 값
+  const [isOpenHistory, setIsOpenHistory] = useState(false); // store에서 가져온 값 when 메뉴아이콘 clicked
+
+
+  useEffect(() => {
+    store.subscribe(()=>{
+      const userfromTopAppBar = store.getState().user;
+      setUser(userfromTopAppBar);
+      const isOpenHistoryfromTopAppBar = store.getState().open;
+      setIsOpenHistory(isOpenHistoryfromTopAppBar);
+    })
+  },[]);
 
   return (
     <div className="App">
-      <TopAppBar/>
-      <Main className="main"/>
-      
+      <TopAppBar />
+      <div>
+        {isOpenHistory ? <History/> : <CalendarAnt/>}
+      </div>
     </div>
   );
 }
