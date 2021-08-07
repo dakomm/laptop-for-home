@@ -1,4 +1,4 @@
-import React,{ useState, useEffect } from 'react';
+import React,{ useState } from 'react';
 import axios from 'axios';
 import store from '../store';
 import { makeStyles } from '@material-ui/core/styles';
@@ -41,7 +41,6 @@ const useStyles = makeStyles((theme) => ({
 
 const TopAppBar = () => {
   const classes = useStyles();
-  const [user, setUser] = useState(''); // db에 존재하는 유저면 확정됨
   const [userID, setUserID] = useState(''); //로그인창 onChange 시 바뀌는 tmp입력값
   const [logIO, setLogIO] = useState('log in');
   const [isLogInModalVisible, setIsLogInModalVisible] = useState(false);
@@ -64,8 +63,6 @@ const TopAppBar = () => {
       setOpenSnackbar(true);
       setTimeout(()=>{setOpenSnackbar(false)},1800);
       setSnackbarContent('Logged Out!');  
-      console.log("log out",user, userID)
-
     }
   }
   const modalLogInButton = async () => {  // 로그인 창에서 login 버튼 클릭 시

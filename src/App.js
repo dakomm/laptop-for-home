@@ -24,7 +24,7 @@ export default function App() {
   },[]);
 
   return (
-    <div className="App">
+    <div className={classes.App}>
       <TopAppBar />
       <div>
         {isOpenHistory ? <History/> : <CalendarAnt/>}

@@ -16,6 +16,9 @@ const useStyles = makeStyles((theme) => ({
   },
   Table:{
     padding: 5,
+  },
+  Dialog:{
+    fontSize: '1rem',
   }
 }));
 
@@ -56,7 +59,7 @@ const CalendarAnt = () => {
       const userfromTopAppBar = store.getState().user;
       setUser(userfromTopAppBar);
     })
-  },[]);
+  },);
 
   const resyncDB = () => {
     axios
@@ -142,7 +145,10 @@ const CalendarAnt = () => {
     if(bookedCnt >= 8){
       bookedCnt = 0
       return available = false;
-    }else return available = true;
+    }else {
+      bookedCnt = 0
+      return available = true;
+    }
   }
 
   const tableButtonType = (e)=> {
@@ -304,7 +310,7 @@ const CalendarAnt = () => {
     </Modal>
     
     <Dialog open={okDialogOpen} onClose={()=>{setOkDialogOpen(false)}} aria-describedby="alert-dialog-description" aria-labelledby="alert-dialog-title">
-      <DialogTitle id="alert-dialog-title">{dialogMsg}</DialogTitle>
+      <DialogTitle disableTypography className={classes.Dialog} id="alert-dialog-title">{dialogMsg}</DialogTitle>
       <DialogActions>
         <Button color="primary" autoFocus
           onClick={()=>{handleOkDialogConfirmed();
@@ -315,7 +321,7 @@ const CalendarAnt = () => {
     </Dialog>
 
     <Dialog open={cancelDialogOpen} onClose={()=>{setCancelDialogOpen(false)}} aria-describedby="alert-dialog-description" aria-labelledby="alert-dialog-title">
-      <DialogTitle id="alert-dialog-title">{dialogMsg}</DialogTitle>
+      <DialogTitle disableTypography className={classes.Dialog} id="alert-dialog-title">{dialogMsg}</DialogTitle>
       <DialogActions>
         <Button color="primary" autoFocus
           onClick={()=>{handleCancelDialogConfirmed();
@@ -326,7 +332,7 @@ const CalendarAnt = () => {
     </Dialog>
 
     <Dialog open={loginReqDialogOpen} onClose={()=>{setLoginReqDialogOpen(false)}} aria-describedby="alert-dialog-description" aria-labelledby="alert-dialog-title">
-      <DialogTitle id="alert-dialog-title">{dialogMsg}</DialogTitle>
+      <DialogTitle disableTypography className={classes.Dialog} id="alert-dialog-title">{dialogMsg}</DialogTitle>
       <DialogActions>
         <Button color="primary" autoFocus
           onClick={()=>{
@@ -338,7 +344,7 @@ const CalendarAnt = () => {
     </Dialog>
 
     <Dialog open={impsblDialogOpen} onClose={()=>{setImpsblDialogOpen(false)}} aria-describedby="alert-dialog-description" aria-labelledby="alert-dialog-title">
-      <DialogTitle id="alert-dialog-title">{dialogMsg}</DialogTitle>
+      <DialogTitle disableTypography className={classes.Dialog} id="alert-dialog-title">{dialogMsg}</DialogTitle>
       <DialogActions>
         <Button color="primary" autoFocus onClick={()=>{setImpsblDialogOpen(false);}}
         > 확인 </Button>
